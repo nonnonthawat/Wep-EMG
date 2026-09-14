@@ -6,7 +6,7 @@ import {
 import { 
   Activity, Settings as SettingsIcon, Play, Square, Bluetooth, BluetoothConnected, 
   History, Globe, Zap, Hand, Clock, BarChart2, Target, SlidersHorizontal, RefreshCw,
-  UserPlus, User, Lock, LogOut, Users, Check, Volume2, VolumeX
+  UserPlus, User, Lock, LogOut, Users, Check, Volume2, VolumeX, Menu, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import WaveformCanvas from './components/WaveformCanvas';
 import './index.css';
@@ -272,6 +272,36 @@ function App() {
   const [lang, setLang] = useState('th');
   const t = i18n[lang];
   const [activeTab, setActiveTab] = useState('testers');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+
+  // Close sidebar on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Lock body scroll on mobile when sidebar drawer is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
+  const handleTabSelect = (tabKey) => {
+    setActiveTab(tabKey);
+    setIsSidebarOpen(false);
+  };
 
   // Testers State
   const initialTesters = [
@@ -1335,7 +1365,7 @@ function App() {
 
   const renderConnection = () => (
     <div className="dashboard-grid">
-      <div className="card banner-card col-span-12" style={{ padding: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '2rem' }}>
+      <div className="card banner-card connection-card col-span-12" style={{ padding: 'clamp(2rem, 5vw, 4rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '360px', gap: '1.75rem' }}>
         <div style={{ textAlign: 'center' }}>
           <div className={`metric-icon ${isConnected ? 'teal' : 'gray'}`} style={{ width: '80px', height: '80px', margin: '0 auto 1.5rem' }}>
             <Bluetooth size={40} />
@@ -1756,7 +1786,7 @@ function App() {
           </div>
         </div>
 
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <table className="history-table">
             <thead>
               <tr>
@@ -1796,7 +1826,42 @@ function App() {
 
   return (
     <div className="app-layout">
-      <aside className="sidebar">
+      {/* Mobile Top Header (Visible on Mobile screens <= 768px) */}
+      <header className="mobile-header">
+        <button 
+          className="mobile-menu-btn" 
+          onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open menu"
+          type="button"
+        >
+          <Menu size={22} />
+        </button>
+
+        <div className="mobile-header-brand">
+          <div className="mobile-brand-icon">
+            <Activity size={18} />
+          </div>
+          <span className="mobile-brand-title">{t.appTitle}</span>
+        </div>
+
+        <div className={`mobile-status-badge ${isConnected ? 'online' : 'offline'}`}>
+          <span className="status-dot" />
+          <span className="status-text">
+            {isConnected ? (lang === 'th' ? 'เชื่อมต่อแล้ว' : 'Connected') : (lang === 'th' ? 'ออฟไลน์' : 'Offline')}
+          </span>
+        </div>
+      </header>
+
+      {/* Backdrop for Mobile Sidebar Drawer */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''} ${isDesktopCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-area">
             <div className="logo-icon">
@@ -1805,6 +1870,29 @@ function App() {
             <div className="logo-text">
               <h1>{t.appTitle}</h1>
             </div>
+          </div>
+
+          <div className="sidebar-header-actions">
+            {/* Desktop collapse toggle */}
+            <button 
+              className="desktop-toggle-btn"
+              onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+              title={isDesktopCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label="Toggle desktop sidebar"
+              type="button"
+            >
+              {isDesktopCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+
+            {/* Mobile close button */}
+            <button 
+              className="sidebar-close-btn" 
+              onClick={() => setIsSidebarOpen(false)}
+              aria-label="Close sidebar"
+              type="button"
+            >
+              <X size={20} />
+            </button>
           </div>
         </div>
 
@@ -1819,26 +1907,26 @@ function App() {
         </div>
 
         <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'testers' ? 'active' : ''}`} onClick={() => setActiveTab('testers')}>
-            <User size={18} /> {t.tabTesters}
+          <button className={`nav-item ${activeTab === 'testers' ? 'active' : ''}`} onClick={() => handleTabSelect('testers')} title={t.tabTesters}>
+            <User size={18} /> <span>{t.tabTesters}</span>
           </button>
-          <button className={`nav-item ${activeTab === 'connect' ? 'active' : ''}`} onClick={() => setActiveTab('connect')}>
-            <Bluetooth size={18} /> {t.tabConnect}
+          <button className={`nav-item ${activeTab === 'connect' ? 'active' : ''}`} onClick={() => handleTabSelect('connect')} title={t.tabConnect}>
+            <Bluetooth size={18} /> <span>{t.tabConnect}</span>
           </button>
-          <button className={`nav-item ${activeTab === 'monitor' ? 'active' : ''}`} onClick={() => setActiveTab('monitor')}>
-            <Activity size={18} /> {t.tabMonitor}
+          <button className={`nav-item ${activeTab === 'monitor' ? 'active' : ''}`} onClick={() => handleTabSelect('monitor')} title={t.tabMonitor}>
+            <Activity size={18} /> <span>{t.tabMonitor}</span>
           </button>
-          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-            <SettingsIcon size={18} /> {t.tabSettings}
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleTabSelect('settings')} title={t.tabSettings}>
+            <SettingsIcon size={18} /> <span>{t.tabSettings}</span>
           </button>
-          <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-            <History size={18} /> {t.tabHistory}
+          <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => handleTabSelect('history')} title={t.tabHistory}>
+            <History size={18} /> <span>{t.tabHistory}</span>
           </button>
         </nav>
 
-        <div style={{ padding: '1rem', borderTop: '1px solid var(--border-light)', marginTop: 'auto' }}>
+        <div className="sidebar-footer" style={{ padding: '1rem', borderTop: '1px solid var(--border-light)', marginTop: 'auto' }}>
            <button className="lang-toggle" style={{ width: '100%', justifyContent: 'center', marginBottom: '0.5rem' }} onClick={() => setLang(lang === 'th' ? 'en' : 'th')}>
-              <Globe size={16} /> {lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}
+              <Globe size={16} /> <span>{lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}</span>
             </button>
         </div>
       </aside>
