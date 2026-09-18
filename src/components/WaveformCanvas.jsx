@@ -66,7 +66,7 @@ const WaveformCanvas = forwardRef(({
       ctx.clearRect(0, 0, width, height);
 
       // Margins aligned for oscilloscope-style presentation
-      const margin = { top: 22, right: 90, bottom: 25, left: 52 };
+      const margin = { top: 28, right: 115, bottom: 32, left: 58 };
       const plotWidth = width - margin.left - margin.right;
       const plotHeight = height - margin.top - margin.bottom;
 
@@ -109,7 +109,7 @@ const WaveformCanvas = forwardRef(({
         vTicks.push(i * stepMv);
       }
 
-      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.font = '600 13px Inter, system-ui, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
 
@@ -132,7 +132,7 @@ const WaveformCanvas = forwardRef(({
 
         // Voltage label text on left
         ctx.setLineDash([]);
-        ctx.fillStyle = tickVal === 0 ? '#64748B' : '#94A3B8';
+        ctx.fillStyle = tickVal === 0 ? '#475569' : '#64748B';
         const voltVal = tickVal / 1000;
         let tickText;
         if (scale === 4) {
@@ -146,11 +146,11 @@ const WaveformCanvas = forwardRef(({
       });
 
       // Oscilloscope Division Scale Badge on top right of the plot
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.font = '600 13px Inter, system-ui, sans-serif';
       ctx.textAlign = 'right';
       const divLabel = `${(scale / 4).toFixed(2)} V/div · 200 ms/div`;
-      ctx.fillText(divLabel, margin.left + plotWidth, margin.top - 6);
+      ctx.fillText(divLabel, margin.left + plotWidth, margin.top - 8);
 
       // 3. Threshold Reference Lines (เริ่มทำ / หยุดทำ)
       if (startGripMv >= yMin && startGripMv <= yMax) {
@@ -166,9 +166,9 @@ const WaveformCanvas = forwardRef(({
         ctx.setLineDash([]);
         ctx.fillStyle = '#00BCA3';
         ctx.textAlign = 'left';
-        ctx.font = '11px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 13px Inter, system-ui, sans-serif';
         const startLabel = t.startAt ? `${t.startAt} ${(startGripMv / 1000).toFixed(2)}V` : `เริ่มทำ ${(startGripMv / 1000).toFixed(2)}V`;
-        ctx.fillText(startLabel, margin.left + plotWidth + 6, yStart + 4);
+        ctx.fillText(startLabel, margin.left + plotWidth + 8, yStart + 4);
       }
 
       if (stopGripMv >= yMin && stopGripMv <= yMax) {
@@ -183,9 +183,9 @@ const WaveformCanvas = forwardRef(({
 
         ctx.fillStyle = '#F97316';
         ctx.textAlign = 'left';
-        ctx.font = '11px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 13px Inter, system-ui, sans-serif';
         const stopLabel = t.stopAt ? `${t.stopAt} ${(stopGripMv / 1000).toFixed(2)}V` : `หยุดทำ ${(stopGripMv / 1000).toFixed(2)}V`;
-        ctx.fillText(stopLabel, margin.left + plotWidth + 6, yStop - 4);
+        ctx.fillText(stopLabel, margin.left + plotWidth + 8, yStop - 4);
       }
 
       // 4. Draw Oscilloscope Waveform Trace (Keysight Yellow #FACC15)
@@ -223,8 +223,8 @@ const WaveformCanvas = forwardRef(({
         ctx.restore();
 
         // 5. Draw Timebase Marks at Bottom (0.0s to 2.0s, exactly matching 200ms/div)
-        ctx.fillStyle = '#64748B';
-        ctx.font = '11px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 13px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
 
@@ -233,7 +233,7 @@ const WaveformCanvas = forwardRef(({
         for (let div = 0; div <= 10; div += 2) {
           const x = margin.left + (div / 10) * plotWidth;
           const timeText = (startT + div * 0.2).toFixed(1) + 's';
-          ctx.fillText(timeText, x, margin.top + plotHeight + 6);
+          ctx.fillText(timeText, x, margin.top + plotHeight + 8);
         }
       } else {
         // Flat ground baseline at 0V when in Standby
@@ -246,13 +246,13 @@ const WaveformCanvas = forwardRef(({
         ctx.lineTo(margin.left + plotWidth, yZero);
         ctx.stroke();
 
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = '11px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#64748B';
+        ctx.font = '600 13px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         for (let div = 0; div <= 10; div += 2) {
           const x = margin.left + (div / 10) * plotWidth;
-          ctx.fillText(`${(div * 0.2).toFixed(1)}s`, x, margin.top + plotHeight + 6);
+          ctx.fillText(`${(div * 0.2).toFixed(1)}s`, x, margin.top + plotHeight + 8);
         }
       }
 

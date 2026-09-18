@@ -1390,7 +1390,7 @@ function App() {
     <div className="dashboard-grid">
       {/* Metrics Row */}
       <div className="card metric-card col-span-4">
-        <div className="metric-header"><Zap size={16} /> {t.emgVal}</div>
+        <div className="metric-header"><Zap size={18} /> {t.emgVal}</div>
         <div className="metric-value teal">
           {isSessionActive && currentVavg > 0 ? `${currentVavg.toFixed(2)} V` : '0.00 V'}
         </div>
@@ -1401,13 +1401,13 @@ function App() {
         </div>
       </div>
       <div className={`card metric-card col-span-4 ${isGripFlash ? 'grip-pulse' : ''}`} style={{ transition: 'all 0.2s ease' }}>
-        <div className="metric-header"><Hand size={16} /> {t.gripVal}</div>
+        <div className="metric-header"><Hand size={18} /> {t.gripVal}</div>
         <div className="metric-value teal">{gripCount}</div>
         <div className="metric-sub">{t.gripSub}</div>
       </div>
       <div className="card metric-card col-span-4">
-        <div className="metric-header"><BarChart2 size={16} /> {t.statusVal}</div>
-        <div className="metric-value" style={{ fontSize: '1.5rem', display: 'flex', alignItems: 'center', height: '100%' }}>
+        <div className="metric-header"><BarChart2 size={18} /> {t.statusVal}</div>
+        <div className="metric-value" style={{ fontSize: '1.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', height: '100%' }}>
           {isSessionActive ? t.statusTraining : (isConnected ? t.statusReady : t.statusWait)}
         </div>
         <div className="metric-sub">{t.statusSub}</div>
@@ -1416,15 +1416,15 @@ function App() {
       {/* Chart */}
       <div className="card col-span-8" style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isConnected ? 'var(--accent-teal)' : '#CBD5E1' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.15rem', fontWeight: 700 }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: isConnected ? 'var(--accent-teal)' : '#CBD5E1' }} />
             {isSessionActive ? (lang === 'th' ? 'EMG · กำลังฝึก' : 'EMG · Training') : t.chartTitle}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {/* Y-Axis Zoom / Scale Buttons */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'var(--bg-main)', padding: '2px 6px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', paddingRight: '4px', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', paddingRight: '6px', fontWeight: 600 }}>
                 {t.scaleLabel || (lang === 'th' ? 'สเกล:' : 'Scale:')}
               </span>
               {[1, 2, 4].map((scaleVal) => {
@@ -1435,9 +1435,9 @@ function App() {
                     type="button"
                     onClick={() => handleScaleChange(scaleVal)}
                     style={{
-                      padding: '2px 8px',
-                      fontSize: '0.75rem',
-                      fontWeight: isActive ? 600 : 500,
+                      padding: '4px 10px',
+                      fontSize: '0.9rem',
+                      fontWeight: isActive ? 700 : 600,
                       borderRadius: '6px',
                       border: isActive ? '1px solid var(--accent-teal)' : '1px solid transparent',
                       cursor: 'pointer',
@@ -1453,7 +1453,7 @@ function App() {
               })}
             </div>
 
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+            <div style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
               {t.chartY}
             </div>
           </div>
@@ -1475,9 +1475,9 @@ function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
           <div>
             <div className="control-header" style={{ marginBottom: '0.25rem' }}>
-              <Clock size={18} /> {t.controlTitle}
+              <Clock size={22} /> {t.controlTitle}
             </div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{t.controlSub}</div>
+            <div style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>{t.controlSub}</div>
           </div>
           <button
             type="button"
@@ -1486,19 +1486,19 @@ function App() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.35rem',
-              padding: '4px 8px',
+              padding: '6px 12px',
               borderRadius: '8px',
               border: soundEnabled ? '1px solid var(--accent-teal)' : '1px solid var(--border-light)',
               background: soundEnabled ? 'rgba(0,188,163,0.08)' : 'var(--bg-main)',
               color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
               cursor: 'pointer',
-              fontSize: '0.75rem',
-              fontWeight: 500,
+              fontSize: '0.9rem',
+              fontWeight: 600,
               transition: 'all 0.15s ease'
             }}
             title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียงตอบรับ (ติ๊ง!)' : 'Click to mute audio biofeedback') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียงตอบรับ (ติ๊ง!)' : 'Click to enable audio biofeedback')}
           >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
             <span>{soundEnabled ? t.soundDing : t.soundMute}</span>
           </button>
         </div>
@@ -1509,10 +1509,10 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-          <div style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace', lineHeight: 1 }}>
+          <div style={{ fontSize: '3.75rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace', lineHeight: 1 }}>
             {formatTime(timeLeft)}
           </div>
-          <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500, letterSpacing: '1px' }}>
+          <div style={{ fontSize: '1.05rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600, letterSpacing: '1.5px' }}>
             {t.timeSub}
           </div>
         </div>
@@ -1521,15 +1521,15 @@ function App() {
 
         <div className="action-grid">
           <button className="action-btn" onClick={handleStartSession} style={{ color: isSessionActive ? 'var(--text-muted)' : 'var(--accent-teal)', borderColor: isSessionActive ? 'var(--border-color)' : 'var(--accent-teal)', background: isSessionActive ? 'var(--bg-main)' : 'rgba(0,188,163,0.05)' }}>
-            <Play size={20} />
+            <Play size={24} />
             {t.startBtn}
           </button>
           <button className="action-btn" onClick={handleStopSession} style={{ color: !isSessionActive ? 'var(--text-muted)' : 'var(--text-primary)' }}>
-            <Square size={20} />
+            <Square size={24} />
             {t.stopBtn}
           </button>
           <button className="action-btn" onClick={handleResetSession}>
-            <RefreshCw size={20} />
+            <RefreshCw size={24} />
             {t.resetBtn}
           </button>
         </div>
@@ -1908,25 +1908,25 @@ function App() {
 
         <nav className="sidebar-nav">
           <button className={`nav-item ${activeTab === 'testers' ? 'active' : ''}`} onClick={() => handleTabSelect('testers')} title={t.tabTesters}>
-            <User size={18} /> <span>{t.tabTesters}</span>
+            <User size={20} /> <span>{t.tabTesters}</span>
           </button>
           <button className={`nav-item ${activeTab === 'connect' ? 'active' : ''}`} onClick={() => handleTabSelect('connect')} title={t.tabConnect}>
-            <Bluetooth size={18} /> <span>{t.tabConnect}</span>
+            <Bluetooth size={20} /> <span>{t.tabConnect}</span>
           </button>
           <button className={`nav-item ${activeTab === 'monitor' ? 'active' : ''}`} onClick={() => handleTabSelect('monitor')} title={t.tabMonitor}>
-            <Activity size={18} /> <span>{t.tabMonitor}</span>
+            <Activity size={20} /> <span>{t.tabMonitor}</span>
           </button>
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleTabSelect('settings')} title={t.tabSettings}>
-            <SettingsIcon size={18} /> <span>{t.tabSettings}</span>
+            <SettingsIcon size={20} /> <span>{t.tabSettings}</span>
           </button>
           <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => handleTabSelect('history')} title={t.tabHistory}>
-            <History size={18} /> <span>{t.tabHistory}</span>
+            <History size={20} /> <span>{t.tabHistory}</span>
           </button>
         </nav>
 
         <div className="sidebar-footer" style={{ padding: '1rem', borderTop: '1px solid var(--border-light)', marginTop: 'auto' }}>
            <button className="lang-toggle" style={{ width: '100%', justifyContent: 'center', marginBottom: '0.5rem' }} onClick={() => setLang(lang === 'th' ? 'en' : 'th')}>
-              <Globe size={16} /> <span>{lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}</span>
+              <Globe size={18} /> <span>{lang === 'th' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}</span>
             </button>
         </div>
       </aside>
