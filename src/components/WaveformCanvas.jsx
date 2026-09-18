@@ -66,7 +66,7 @@ const WaveformCanvas = forwardRef(({
       ctx.clearRect(0, 0, width, height);
 
       // Margins aligned for oscilloscope-style presentation
-      const margin = { top: 32, right: 135, bottom: 40, left: 68 };
+      const margin = { top: 22, right: 96, bottom: 26, left: 52 };
       const plotWidth = width - margin.left - margin.right;
       const plotHeight = height - margin.top - margin.bottom;
 
@@ -109,7 +109,7 @@ const WaveformCanvas = forwardRef(({
         vTicks.push(i * stepMv);
       }
 
-      ctx.font = '700 15px Inter, system-ui, sans-serif';
+      ctx.font = '600 12px Inter, system-ui, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
 
@@ -146,11 +146,11 @@ const WaveformCanvas = forwardRef(({
       });
 
       // Oscilloscope Division Scale Badge on top right of the plot
-      ctx.fillStyle = '#475569';
-      ctx.font = '700 14px Inter, system-ui, sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.font = '600 11px Inter, system-ui, sans-serif';
       ctx.textAlign = 'right';
       const divLabel = `${(scale / 4).toFixed(2)} V/div · 200 ms/div`;
-      ctx.fillText(divLabel, margin.left + plotWidth, margin.top - 8);
+      ctx.fillText(divLabel, margin.left + plotWidth, margin.top - 6);
 
       // 3. Threshold Reference Lines (เริ่มทำ / หยุดทำ)
       if (startGripMv >= yMin && startGripMv <= yMax) {
@@ -166,9 +166,9 @@ const WaveformCanvas = forwardRef(({
         ctx.setLineDash([]);
         ctx.fillStyle = '#00BCA3';
         ctx.textAlign = 'left';
-        ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 12px Inter, system-ui, sans-serif';
         const startLabel = t.startAt ? `${t.startAt} ${(startGripMv / 1000).toFixed(2)}V` : `เริ่มทำ ${(startGripMv / 1000).toFixed(2)}V`;
-        ctx.fillText(startLabel, margin.left + plotWidth + 8, yStart + 5);
+        ctx.fillText(startLabel, margin.left + plotWidth + 6, yStart + 4);
       }
 
       if (stopGripMv >= yMin && stopGripMv <= yMax) {
@@ -183,9 +183,9 @@ const WaveformCanvas = forwardRef(({
 
         ctx.fillStyle = '#F97316';
         ctx.textAlign = 'left';
-        ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 12px Inter, system-ui, sans-serif';
         const stopLabel = t.stopAt ? `${t.stopAt} ${(stopGripMv / 1000).toFixed(2)}V` : `หยุดทำ ${(stopGripMv / 1000).toFixed(2)}V`;
-        ctx.fillText(stopLabel, margin.left + plotWidth + 8, yStop - 5);
+        ctx.fillText(stopLabel, margin.left + plotWidth + 6, yStop - 4);
       }
 
       // 4. Draw Oscilloscope Waveform Trace (Keysight Yellow #FACC15)
@@ -223,8 +223,8 @@ const WaveformCanvas = forwardRef(({
         ctx.restore();
 
         // 5. Draw Timebase Marks at Bottom (0.0s to 2.0s, exactly matching 200ms/div)
-        ctx.fillStyle = '#334155';
-        ctx.font = '700 15px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 12px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
 
@@ -246,8 +246,8 @@ const WaveformCanvas = forwardRef(({
         ctx.lineTo(margin.left + plotWidth, yZero);
         ctx.stroke();
 
-        ctx.fillStyle = '#475569';
-        ctx.font = '700 15px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#64748B';
+        ctx.font = '600 12px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         for (let div = 0; div <= 10; div += 2) {
