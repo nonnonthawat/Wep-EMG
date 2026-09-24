@@ -1,3 +1,4 @@
+// EMG Grip Therapy Web Application - Stable Release
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid,
