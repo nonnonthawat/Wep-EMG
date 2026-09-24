@@ -1656,121 +1656,127 @@ function App() {
 
       {/* Controls */}
       <div className="card control-card col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', justifyContent: 'flex-start' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-          <div>
-            <div className="control-header" style={{ marginBottom: '0.25rem' }}>
-              <Clock size={19} /> {t.controlTitle}
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t.controlSub}</div>
+        {/* Title Area */}
+        <div>
+          <div className="control-header" style={{ marginBottom: '0.25rem' }}>
+            <Clock size={19} /> {t.controlTitle}
           </div>
-          {/* Sound Controls Header: Select Sound Mode & Volume Slider */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {/* Select Sound Mode (Voice count vs Ding Chime) */}
-              <select
-                value={soundType}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSoundType(val);
-                  soundTypeRef.current = val;
-                  try { localStorage.setItem('emg_sound_type', val); } catch {}
-                  if (!soundEnabled) {
-                    setSoundEnabled(true);
-                    soundEnabledRef.current = true;
-                    try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
-                  }
-                  if (val === 'voice') setTimeout(() => playVoicePreview(1), 50);
-                  else setTimeout(() => playDingPreview(), 50);
-                }}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-card)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'border-color 0.15s ease'
-                }}
-                title={lang === 'th' ? 'เลือกรูปแบบเสียง (เสียงพูดนับ 1, 2, 3... หรือ เสียงติ๊ง)' : 'Select sound mode (Voice count or Ding)'}
-              >
-                <option value="voice">🗣️ {t.soundVoice}</option>
-                <option value="ding">🔔 {t.soundDing}</option>
-              </select>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t.controlSub}</div>
+        </div>
 
-              {/* Mute / Unmute Button */}
-              <button
-                type="button"
-                onClick={toggleSound}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  border: soundEnabled ? '1px solid var(--accent-teal)' : '1px solid var(--border-color)',
-                  background: soundEnabled ? 'rgba(0,188,163,0.08)' : 'var(--bg-main)',
-                  color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  transition: 'all 0.15s ease'
-                }}
-                title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียง' : 'Click to mute') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียง' : 'Click to unmute')}
-              >
-                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              </button>
-            </div>
+        {/* Sound Controls Panel (Full width, neat container) */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          background: 'var(--bg-main)', 
+          padding: '8px 10px', 
+          borderRadius: '10px', 
+          border: '1px solid var(--border-color)',
+          gap: '8px',
+          flexWrap: 'wrap'
+        }}>
+          {/* Left: Dropdown */}
+          <select
+            value={soundType}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSoundType(val);
+              soundTypeRef.current = val;
+              try { localStorage.setItem('emg_sound_type', val); } catch {}
+              if (!soundEnabled) {
+                setSoundEnabled(true);
+                soundEnabledRef.current = true;
+                try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
+              }
+              if (val === 'voice') setTimeout(() => playVoicePreview(1), 50);
+              else setTimeout(() => playDingPreview(), 50);
+            }}
+            style={{
+              flex: '1 1 auto',
+              minWidth: '135px',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              outline: 'none',
+              transition: 'border-color 0.15s ease'
+            }}
+            title={lang === 'th' ? 'เลือกรูปแบบเสียง (เสียงพูดนับ 1, 2, 3... หรือ เสียงติ๊ง)' : 'Select sound mode (Voice count or Ding)'}
+          >
+            <option value="voice">🗣️ {t.soundVoice}</option>
+            <option value="ding">🔔 {t.soundDing}</option>
+          </select>
 
-            {/* Volume Slider Row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                {t.soundVol}:
-              </span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={soundEnabled ? soundVolume : 0}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  setSoundVolume(val);
-                  soundVolumeRef.current = val;
-                  try { localStorage.setItem('emg_sound_volume', String(val)); } catch {}
-                  if (!soundEnabled && val > 0) {
-                    setSoundEnabled(true);
-                    soundEnabledRef.current = true;
-                    try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
-                  }
-                }}
-                onMouseUp={() => {
-                  if (soundEnabled) {
-                    if (soundTypeRef.current === 'voice') playVoicePreview(1);
-                    else playDingPreview();
-                  }
-                }}
-                onTouchEnd={() => {
-                  if (soundEnabled) {
-                    if (soundTypeRef.current === 'voice') playVoicePreview(1);
-                    else playDingPreview();
-                  }
-                }}
-                style={{
-                  width: '72px',
-                  height: '4px',
-                  accentColor: 'var(--accent-teal)',
-                  cursor: 'pointer',
-                  verticalAlign: 'middle'
-                }}
-                title={`${t.soundVol}: ${Math.round((soundEnabled ? soundVolume : 0) * 100)}%`}
-              />
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '32px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                {soundEnabled ? `${Math.round(soundVolume * 100)}%` : '0%'}
-              </span>
-            </div>
+          {/* Right: Mute + Volume */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={toggleSound}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                border: soundEnabled ? '1px solid var(--accent-teal)' : '1px solid var(--border-color)',
+                background: soundEnabled ? 'rgba(0,188,163,0.08)' : 'var(--bg-card)',
+                color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'all 0.15s ease'
+              }}
+              title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียง' : 'Click to mute') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียง' : 'Click to unmute')}
+            >
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
+
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={soundEnabled ? soundVolume : 0}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                setSoundVolume(val);
+                soundVolumeRef.current = val;
+                try { localStorage.setItem('emg_sound_volume', String(val)); } catch {}
+                if (!soundEnabled && val > 0) {
+                  setSoundEnabled(true);
+                  soundEnabledRef.current = true;
+                  try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
+                }
+              }}
+              onMouseUp={() => {
+                if (soundEnabled) {
+                  if (soundTypeRef.current === 'voice') playVoicePreview(1);
+                  else playDingPreview();
+                }
+              }}
+              onTouchEnd={() => {
+                if (soundEnabled) {
+                  if (soundTypeRef.current === 'voice') playVoicePreview(1);
+                  else playDingPreview();
+                }
+              }}
+              style={{
+                width: '60px',
+                height: '4px',
+                accentColor: 'var(--accent-teal)',
+                cursor: 'pointer',
+                verticalAlign: 'middle'
+              }}
+              title={`${t.soundVol}: ${Math.round((soundEnabled ? soundVolume : 0) * 100)}%`}
+            />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '32px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+              {soundEnabled ? `${Math.round(soundVolume * 100)}%` : '0%'}
+            </span>
           </div>
         </div>
         
