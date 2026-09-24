@@ -48,8 +48,10 @@ const i18n = {
     controlTitle: "ควบคุมการฝึก",
     controlSub: "ตั้งเวลาและเริ่ม/หยุดเซสชัน",
     soundBiofeedback: "เสียงตอบรับทางชีวภาพ",
-    soundDing: "เสียงติ๊ง",
+    soundVoice: "เสียงพูดนับ (1, 2, 3...)",
+    soundDing: "เสียงติ๊ง (เดิม)",
     soundMute: "ปิดเสียง",
+    soundVol: "ระดับเสียง",
     calibTitle: "คาลิเบรต threshold",
     calibSub: "วางมือพัก 3 วิ แล้วกด →",
     calibBtn: "Calibrate",
@@ -175,8 +177,10 @@ const i18n = {
     controlTitle: "Session Control",
     controlSub: "Set time and start/stop session",
     soundBiofeedback: "Audio Biofeedback",
-    soundDing: "Ding Sound",
+    soundVoice: "Voice Count (1, 2, 3...)",
+    soundDing: "Chime Ding (Original)",
     soundMute: "Muted",
+    soundVol: "Volume",
     calibTitle: "Calibrate threshold",
     calibSub: "Rest hand for 3s then press →",
     calibBtn: "Calibrate",
@@ -486,10 +490,32 @@ function App() {
     } catch {}
   };
 
-  // Audio Biofeedback ("Ding!" Chime) & Visual Flash State
+  // Audio Biofeedback: Spoken Voice (1,2,3...) & Original Chime ("Ding!")
   const audioCtxRef = useRef(null);
   const soundEnabledRef = useRef(true);
   const [isGripFlash, setIsGripFlash] = useState(false);
+
+  // Sound Type: 'voice' (เสียงพูด หนึ่ง สอง สาม...) or 'ding' (เสียงติ๊งกระดิ่ง)
+  const [soundType, setSoundType] = useState(() => {
+    try {
+      const saved = localStorage.getItem('emg_sound_type');
+      return saved === 'ding' ? 'ding' : 'voice';
+    } catch {
+      return 'voice';
+    }
+  });
+  const soundTypeRef = useRef(soundType);
+
+  // Sound Volume: 0.0 to 1.0 (default 1.0)
+  const [soundVolume, setSoundVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem('emg_sound_volume');
+      return saved !== null ? parseFloat(saved) : 1.0;
+    } catch {
+      return 1.0;
+    }
+  });
+  const soundVolumeRef = useRef(soundVolume);
 
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
@@ -503,6 +529,14 @@ function App() {
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
+
+  useEffect(() => {
+    soundTypeRef.current = soundType;
+  }, [soundType]);
+
+  useEffect(() => {
+    soundVolumeRef.current = soundVolume;
+  }, [soundVolume]);
 
   const initOrResumeAudio = () => {
     try {
@@ -521,18 +555,111 @@ function App() {
     }
   };
 
-  const playDingSound = () => {
+  // In-memory cache of pre-decoded AudioBuffers for 0ms instant playback
+  const audioBufferCacheRef = useRef({});
+  const loadingPromisesRef = useRef({});
+
+  const getAudioUrl = (count) => {
+    const base = import.meta.env.BASE_URL || './';
+    const cleanBase = base.endsWith('/') ? base : base + '/';
+    return `${cleanBase}audio/count_${count}.mp3`;
+  };
+
+  const loadAudioBuffer = async (count) => {
+    if (audioBufferCacheRef.current[count]) {
+      return audioBufferCacheRef.current[count];
+    }
+    if (loadingPromisesRef.current[count]) {
+      return loadingPromisesRef.current[count];
+    }
+    if (count < 1 || count > 50) return null;
+
+    const promise = (async () => {
+      try {
+        const url = getAudioUrl(count);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const arrayBuffer = await res.arrayBuffer();
+        const ctx = initOrResumeAudio();
+        if (!ctx) return null;
+        const decoded = await ctx.decodeAudioData(arrayBuffer);
+        audioBufferCacheRef.current[count] = decoded;
+        return decoded;
+      } catch (err) {
+        return null;
+      } finally {
+        delete loadingPromisesRef.current[count];
+      }
+    })();
+
+    loadingPromisesRef.current[count] = promise;
+    return promise;
+  };
+
+  // Pre-load audio buffers in memory on app startup for zero latency
+  useEffect(() => {
+    // 1. Immediately preload counts 1-10
+    for (let i = 1; i <= 10; i++) {
+      loadAudioBuffer(i);
+    }
+    // 2. Smoothly background-preload counts 11-50
+    const timer = setTimeout(() => {
+      let nextNum = 11;
+      const interval = setInterval(() => {
+        if (nextNum > 50) {
+          clearInterval(interval);
+          return;
+        }
+        loadAudioBuffer(nextNum);
+        nextNum++;
+      }, 50);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Helper to play an AudioBuffer with 3.0x amplification & dynamics limiter
+  const playBuffer = (ctx, buffer, vol) => {
+    try {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+
+      // 3.0x Gain Amplification as requested: "เพิ่มเสียงขึ้นสามเท่า เพราะเสียงเบามาก"
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(3.0 * vol, ctx.currentTime);
+
+      // Dynamics compressor acts as a transparent brickwall limiter to avoid speaker clipping
+      const compressor = ctx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-3.0, ctx.currentTime);
+      compressor.knee.setValueAtTime(6.0, ctx.currentTime);
+      compressor.ratio.setValueAtTime(12.0, ctx.currentTime);
+      compressor.attack.setValueAtTime(0.002, ctx.currentTime);
+      compressor.release.setValueAtTime(0.1, ctx.currentTime);
+
+      source.connect(gainNode);
+      gainNode.connect(compressor);
+      compressor.connect(ctx.destination);
+
+      source.start(0);
+    } catch (err) {
+      console.warn("Buffer playback error:", err);
+    }
+  };
+
+  // Sound 1: Original Crystal Bell Chime ("ติ๊ง!")
+  const playDingSound = (providedCtx = null, volume = null) => {
     if (!soundEnabledRef.current) return;
     try {
-      const ctx = initOrResumeAudio();
+      const ctx = providedCtx || initOrResumeAudio();
       if (!ctx) return;
 
+      const vol = volume !== null ? volume : soundVolumeRef.current;
       const now = ctx.currentTime;
 
       // Master output gain envelope for natural bell chime
       const masterGain = ctx.createGain();
       masterGain.gain.setValueAtTime(0.0001, now);
-      masterGain.gain.linearRampToValueAtTime(0.35, now + 0.003); // Quick crisp strike
+      masterGain.gain.linearRampToValueAtTime(0.45 * vol, now + 0.003); // Quick crisp strike
       masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65); // Silky smooth decay
       masterGain.connect(ctx.destination);
 
@@ -547,7 +674,7 @@ function App() {
       osc2.type = 'sine';
       osc2.frequency.setValueAtTime(2093, now);
       const gain2 = ctx.createGain();
-      gain2.gain.setValueAtTime(0.28, now);
+      gain2.gain.setValueAtTime(0.28 * vol, now);
       gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
       osc2.connect(gain2);
       gain2.connect(masterGain);
@@ -557,7 +684,7 @@ function App() {
       osc3.type = 'sine';
       osc3.frequency.setValueAtTime(3135.96, now);
       const gain3 = ctx.createGain();
-      gain3.gain.setValueAtTime(0.12, now);
+      gain3.gain.setValueAtTime(0.12 * vol, now);
       gain3.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
       osc3.connect(gain3);
       gain3.connect(masterGain);
@@ -574,15 +701,71 @@ function App() {
     }
   };
 
+  // Sound 2: Natural Spoken Voice ("หนึ่ง", "สอง", "สาม", "สี่"...) or Sound 1 ("ติ๊ง!")
+  // Instant trigger with 0ms delay via pre-decoded AudioBuffer
+  const playFeedbackSound = (count) => {
+    if (!soundEnabledRef.current) return;
+    const ctx = initOrResumeAudio();
+    if (!ctx) return;
+
+    const currentType = soundTypeRef.current;
+    const currentVol = soundVolumeRef.current;
+
+    if (currentType === 'ding') {
+      playDingSound(ctx, currentVol);
+      return;
+    }
+
+    // Voice count playback
+    const buffer = audioBufferCacheRef.current[count];
+    if (buffer) {
+      playBuffer(ctx, buffer, currentVol);
+    } else if (count >= 1 && count <= 50) {
+      loadAudioBuffer(count).then(buf => {
+        if (buf && ctx) {
+          playBuffer(ctx, buf, currentVol);
+        } else {
+          playDingSound(ctx, currentVol);
+        }
+      });
+    } else {
+      // Fallback for counts beyond 50
+      playDingSound(ctx, currentVol);
+    }
+  };
+
+  const playVoicePreview = (sampleNum = 1) => {
+    const ctx = initOrResumeAudio();
+    if (!ctx) return;
+    const buffer = audioBufferCacheRef.current[sampleNum];
+    if (buffer) {
+      playBuffer(ctx, buffer, soundVolumeRef.current);
+    } else {
+      loadAudioBuffer(sampleNum).then(buf => {
+        if (buf && ctx) playBuffer(ctx, buf, soundVolumeRef.current);
+      });
+    }
+  };
+
+  const playDingPreview = () => {
+    const ctx = initOrResumeAudio();
+    if (!ctx) return;
+    playDingSound(ctx, soundVolumeRef.current);
+  };
+
   const toggleSound = () => {
     const nextState = !soundEnabled;
     setSoundEnabled(nextState);
+    soundEnabledRef.current = nextState;
     try {
       localStorage.setItem('emg_sound_enabled', String(nextState));
     } catch {}
-    soundEnabledRef.current = nextState;
     if (nextState) {
-      setTimeout(() => playDingSound(), 50);
+      if (soundTypeRef.current === 'voice') {
+        setTimeout(() => playVoicePreview(1), 50);
+      } else {
+        setTimeout(() => playDingPreview(), 50);
+      }
     }
   };
 
@@ -1037,7 +1220,7 @@ function App() {
                 sessionRef.current.releaseHoldStartTime = 0;
                 sessionRef.current.gripCount++;
                 setGripCount(prev => prev + 1);
-                playDingSound();
+                playFeedbackSound(sessionRef.current.gripCount);
                 setIsGripFlash(true);
                 setTimeout(() => setIsGripFlash(false), 350);
               }
@@ -1480,28 +1663,115 @@ function App() {
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t.controlSub}</div>
           </div>
-          <button
-            type="button"
-            onClick={toggleSound}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              border: soundEnabled ? '1px solid var(--accent-teal)' : '1px solid var(--border-light)',
-              background: soundEnabled ? 'rgba(0,188,163,0.08)' : 'var(--bg-main)',
-              color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              transition: 'all 0.15s ease'
-            }}
-            title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียงตอบรับ (ติ๊ง!)' : 'Click to mute audio biofeedback') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียงตอบรับ (ติ๊ง!)' : 'Click to enable audio biofeedback')}
-          >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-            <span>{soundEnabled ? t.soundDing : t.soundMute}</span>
-          </button>
+          {/* Sound Controls Header: Select Sound Mode & Volume Slider */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {/* Select Sound Mode (Voice count vs Ding Chime) */}
+              <select
+                value={soundType}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSoundType(val);
+                  soundTypeRef.current = val;
+                  try { localStorage.setItem('emg_sound_type', val); } catch {}
+                  if (!soundEnabled) {
+                    setSoundEnabled(true);
+                    soundEnabledRef.current = true;
+                    try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
+                  }
+                  if (val === 'voice') setTimeout(() => playVoicePreview(1), 50);
+                  else setTimeout(() => playDingPreview(), 50);
+                }}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'border-color 0.15s ease'
+                }}
+                title={lang === 'th' ? 'เลือกรูปแบบเสียง (เสียงพูดนับ 1, 2, 3... หรือ เสียงติ๊ง)' : 'Select sound mode (Voice count or Ding)'}
+              >
+                <option value="voice">🗣️ {t.soundVoice}</option>
+                <option value="ding">🔔 {t.soundDing}</option>
+              </select>
+
+              {/* Mute / Unmute Button */}
+              <button
+                type="button"
+                onClick={toggleSound}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  border: soundEnabled ? '1px solid var(--accent-teal)' : '1px solid var(--border-color)',
+                  background: soundEnabled ? 'rgba(0,188,163,0.08)' : 'var(--bg-main)',
+                  color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.15s ease'
+                }}
+                title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียง' : 'Click to mute') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียง' : 'Click to unmute')}
+              >
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+              </button>
+            </div>
+
+            {/* Volume Slider Row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                {t.soundVol}:
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={soundEnabled ? soundVolume : 0}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  setSoundVolume(val);
+                  soundVolumeRef.current = val;
+                  try { localStorage.setItem('emg_sound_volume', String(val)); } catch {}
+                  if (!soundEnabled && val > 0) {
+                    setSoundEnabled(true);
+                    soundEnabledRef.current = true;
+                    try { localStorage.setItem('emg_sound_enabled', 'true'); } catch {}
+                  }
+                }}
+                onMouseUp={() => {
+                  if (soundEnabled) {
+                    if (soundTypeRef.current === 'voice') playVoicePreview(1);
+                    else playDingPreview();
+                  }
+                }}
+                onTouchEnd={() => {
+                  if (soundEnabled) {
+                    if (soundTypeRef.current === 'voice') playVoicePreview(1);
+                    else playDingPreview();
+                  }
+                }}
+                style={{
+                  width: '72px',
+                  height: '4px',
+                  accentColor: 'var(--accent-teal)',
+                  cursor: 'pointer',
+                  verticalAlign: 'middle'
+                }}
+                title={`${t.soundVol}: ${Math.round((soundEnabled ? soundVolume : 0) * 100)}%`}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '32px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                {soundEnabled ? `${Math.round(soundVolume * 100)}%` : '0%'}
+              </span>
+            </div>
+          </div>
         </div>
         
         <div className="timer-select">
