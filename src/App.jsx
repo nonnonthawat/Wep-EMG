@@ -24,7 +24,7 @@ const i18n = {
     deviceSub: "อุปกรณ์ EMG ผ่าน BLE (ESP32)",
     connectBtn: "เชื่อมต่อ Bluetooth",
     disconnectBtn: "ยกเลิกการเชื่อมต่อ",
-    emgVal: "Vaverage",
+    emgVal: <span>V<sub>avg</sub></span>,
     emgSub: "EMG · Raw ADC: 0",
     vmax: "Vmax (สูงสุด)",
     vmin: "Vmin (ต่ำสุด)",
@@ -92,7 +92,7 @@ const i18n = {
     colSetTime: "ตั้งเวลา",
     colRealTime: "เวลาจริง",
     colGrip: "กำมือ (ครั้ง)",
-    colEMG: "Vaverage (V)",
+    colEMG: <span>V<sub>avg</sub> (V)</span>,
     colAvg: "เฉลี่ย (วิ)",
     
     // Auth
@@ -151,7 +151,7 @@ const i18n = {
     deviceSub: "EMG device via BLE (ESP32)",
     connectBtn: "Connect Bluetooth",
     disconnectBtn: "Disconnect",
-    emgVal: "Vaverage",
+    emgVal: <span>V<sub>avg</sub></span>,
     emgSub: "EMG · Raw ADC: 0",
     vmax: "Vmax (Max)",
     vmin: "Vmin (Min)",
@@ -219,7 +219,7 @@ const i18n = {
     colSetTime: "Set Time",
     colRealTime: "Actual Time",
     colGrip: "Grips",
-    colEMG: "Vaverage (V)",
+    colEMG: <span>V<sub>avg</sub> (V)</span>,
     colAvg: "Avg (s)",
     
     // Auth
