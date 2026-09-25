@@ -572,7 +572,7 @@ function App() {
     if (loadingPromisesRef.current[count]) {
       return loadingPromisesRef.current[count];
     }
-    if (count < 1 || count > 50) return null;
+    if (count < 1 || count > 200) return null;
 
     const promise = (async () => {
       try {
@@ -602,11 +602,11 @@ function App() {
     for (let i = 1; i <= 10; i++) {
       loadAudioBuffer(i);
     }
-    // 2. Smoothly background-preload counts 11-50
+    // 2. Smoothly background-preload counts 11-200
     const timer = setTimeout(() => {
       let nextNum = 11;
       const interval = setInterval(() => {
-        if (nextNum > 50) {
+        if (nextNum > 200) {
           clearInterval(interval);
           return;
         }
@@ -720,7 +720,7 @@ function App() {
     const buffer = audioBufferCacheRef.current[count];
     if (buffer) {
       playBuffer(ctx, buffer, currentVol);
-    } else if (count >= 1 && count <= 50) {
+    } else if (count >= 1 && count <= 200) {
       loadAudioBuffer(count).then(buf => {
         if (buf && ctx) {
           playBuffer(ctx, buf, currentVol);
@@ -729,7 +729,7 @@ function App() {
         }
       });
     } else {
-      // Fallback for counts beyond 50
+      // Fallback for counts beyond 200
       playDingSound(ctx, currentVol);
     }
   };
