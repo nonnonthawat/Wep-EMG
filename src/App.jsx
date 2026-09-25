@@ -1667,16 +1667,14 @@ function App() {
         {/* Sound Controls Panel (Full width, neat container) */}
         <div style={{ 
           display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
+          flexDirection: 'column', 
           background: 'var(--bg-main)', 
-          padding: '8px 10px', 
+          padding: '10px', 
           borderRadius: '10px', 
           border: '1px solid var(--border-color)',
-          gap: '8px',
-          flexWrap: 'wrap'
+          gap: '10px'
         }}>
-          {/* Left: Dropdown */}
+          {/* Top: Dropdown */}
           <select
             value={soundType}
             onChange={(e) => {
@@ -1693,9 +1691,8 @@ function App() {
               else setTimeout(() => playDingPreview(), 50);
             }}
             style={{
-              flex: '1 1 auto',
-              minWidth: '135px',
-              padding: '6px 8px',
+              width: '100%',
+              padding: '8px 10px',
               borderRadius: '6px',
               border: '1px solid var(--border-color)',
               background: 'var(--bg-card)',
@@ -1712,8 +1709,8 @@ function App() {
             <option value="ding">🔔 {t.soundDing}</option>
           </select>
 
-          {/* Right: Mute + Volume */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* Bottom: Mute + Volume */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
             <button
               type="button"
               onClick={toggleSound}
@@ -1729,7 +1726,8 @@ function App() {
                 color: soundEnabled ? 'var(--accent-teal)' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 padding: 0,
-                transition: 'all 0.15s ease'
+                transition: 'all 0.15s ease',
+                flexShrink: 0
               }}
               title={soundEnabled ? (lang === 'th' ? 'คลิกเพื่อปิดเสียง' : 'Click to mute') : (lang === 'th' ? 'คลิกเพื่อเปิดเสียง' : 'Click to unmute')}
             >
@@ -1766,15 +1764,16 @@ function App() {
                 }
               }}
               style={{
-                width: '60px',
+                flex: 1,
                 height: '4px',
                 accentColor: 'var(--accent-teal)',
                 cursor: 'pointer',
-                verticalAlign: 'middle'
+                verticalAlign: 'middle',
+                minWidth: '50px'
               }}
               title={`${t.soundVol}: ${Math.round((soundEnabled ? soundVolume : 0) * 100)}%`}
             />
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '32px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', minWidth: '35px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
               {soundEnabled ? `${Math.round(soundVolume * 100)}%` : '0%'}
             </span>
           </div>
