@@ -785,8 +785,8 @@ function App() {
 
   const sessionRef = useRef({ 
     isActive: false, 
-    startMv: 978.0, 
-    stopMv: 880.0,
+    startMv: 0, 
+    stopMv: 0,
     isGripping: false,
     gripCount: 0,
     lastGripTime: 0,
