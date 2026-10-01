@@ -1008,11 +1008,10 @@ function App() {
     
     setHistoryLogs(prev => {
       const updated = [newLog, ...prev];
-      if (activeTesterId) {
-        localStorage.setItem(`emg_history_${activeTesterId}`, JSON.stringify(updated));
+      const currentId = activeTesterId || localStorage.getItem('emg_active_tester');
+      if (currentId) {
+        localStorage.setItem(`emg_history_${currentId}`, JSON.stringify(updated));
       }
-      return updated;
-    });
 
     if (reason === 'grip' || reason === 'time') {
       setCompletionModal({ show: true, reason, grips: sessionRef.current.gripCount, time: actualTime });
