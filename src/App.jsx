@@ -430,10 +430,30 @@ function App() {
     if (activeTesterId) {
       const savedHistory = localStorage.getItem(`emg_history_${activeTesterId}`);
       setHistoryLogs(savedHistory ? JSON.parse(savedHistory) : []);
+      const savedStart = localStorage.getItem(`emg_startGrip_${activeTesterId}`);
+      if (savedStart) setStartGripMv(parseFloat(savedStart));
+      else setStartGripMv(978.0);
+      const savedStop = localStorage.getItem(`emg_stopGrip_${activeTesterId}`);
+      if (savedStop) setStopGripMv(parseFloat(savedStop));
+      else setStopGripMv(880.0);
     } else {
       setHistoryLogs([]);
     }
   }, [activeTesterId]);
+
+  useEffect(() => {
+    if (activeTesterId) {
+      localStorage.setItem(`emg_startGrip_${activeTesterId}`, startGripMv);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startGripMv]);
+
+  useEffect(() => {
+    if (activeTesterId) {
+      localStorage.setItem(`emg_stopGrip_${activeTesterId}`, stopGripMv);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stopGripMv]);
 
   // Custom Settings State
   const [isCustomTime, setIsCustomTime] = useState(false);
