@@ -430,30 +430,10 @@ function App() {
     if (activeTesterId) {
       const savedHistory = localStorage.getItem(`emg_history_${activeTesterId}`);
       setHistoryLogs(savedHistory ? JSON.parse(savedHistory) : []);
-      const savedStart = localStorage.getItem(`emg_startGrip_${activeTesterId}`);
-      if (savedStart) setStartGripMv(parseFloat(savedStart));
-      else setStartGripMv(978.0);
-      const savedStop = localStorage.getItem(`emg_stopGrip_${activeTesterId}`);
-      if (savedStop) setStopGripMv(parseFloat(savedStop));
-      else setStopGripMv(880.0);
     } else {
       setHistoryLogs([]);
     }
   }, [activeTesterId]);
-
-  useEffect(() => {
-    if (activeTesterId) {
-      localStorage.setItem(`emg_startGrip_${activeTesterId}`, startGripMv);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startGripMv]);
-
-  useEffect(() => {
-    if (activeTesterId) {
-      localStorage.setItem(`emg_stopGrip_${activeTesterId}`, stopGripMv);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stopGripMv]);
 
   // Custom Settings State
   const [isCustomTime, setIsCustomTime] = useState(false);
@@ -488,8 +468,8 @@ function App() {
   // Settings State
   const [sessionTimePreset, setSessionTimePreset] = useState(5);
   const [targetGrips, setTargetGrips] = useState(20);
-  const [startGripMv, setStartGripMv] = useState(978.0);
-  const [stopGripMv, setStopGripMv] = useState(880.0);
+  const [startGripMv, setStartGripMv] = useState(0);
+  const [stopGripMv, setStopGripMv] = useState(0);
   const [triggerMult, setTriggerMult] = useState(1.25);
   const [releaseMult, setReleaseMult] = useState(1.10);
 
