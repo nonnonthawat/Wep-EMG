@@ -932,6 +932,7 @@ function App() {
     sessionRef.current.emaValue = 0;
     sessionRef.current.startTime = Date.now();
     sessionRef.current.isActive = true;
+    sessionRef.current.isFinishing = false;
     setForceFinish(false);
     setTimeLeft(isCustomTime ? customMin * 60 + customSec : sessionTimePreset * 60);
     setIsSessionActive(true);
@@ -960,6 +961,7 @@ function App() {
   const handleResetSession = () => {
     setIsSessionActive(false);
     sessionRef.current.isActive = false;
+    sessionRef.current.isFinishing = false;
     setGripCount(0);
     setTimeLeft(isCustomTime ? customMin * 60 + customSec : sessionTimePreset * 60);
     waveformRef.current?.reset();
@@ -973,6 +975,9 @@ function App() {
   };
 
   function finishSession() {
+    if (sessionRef.current.isFinishing) return;
+    sessionRef.current.isFinishing = true;
+
     setIsSessionActive(false);
     sessionRef.current.isActive = false;
     waveformRef.current?.reset();
